@@ -26,7 +26,6 @@
   <ItemGroup>
     <None Include="shaders\compute.glsl" />
     <None Include="shaders\fragment.glsl" />
-    <None Include="README.md" />
     <None Include="shaders\vertex.glsl" />
   </ItemGroup>
   <ItemGroup>
