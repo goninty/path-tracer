@@ -5,7 +5,7 @@ layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 layout(rgba32f, binding = 0) uniform image2D screen;
 
 uniform vec3 cameraPosition = vec3(0.0, 0.0, 0.0);
-uniform vec3 directionalLight = vec3(0.5, -1.0, -1.0);
+uniform vec3 directionalLight = vec3(1.0, -1.0, -1.0);
 
 struct Ray
 {
@@ -47,14 +47,15 @@ vec3 trace(struct Ray viewRay)
 
 		//return hitPos;
 
-		float col = dot(normal, -directionalLight);
+		float ndotl = clamp(dot(normal, -0.5*directionalLight), 0.0, 1.0);
+		
 		//if (col < 0.62)
 		//{
 		//	col = col*5;
 		//}
 		
 		//return sph.color;
-		return sph.color * col;
+		return sph.color * ndotl;
 		//return vec3(col, col, col);
 	}
 
@@ -76,7 +77,8 @@ void main()
 
 	struct Ray viewRay;
 	viewRay.pos = vec3(x, y, -1.0);
-	viewRay.dir = viewRay.pos - cameraPosition;
+	// don't forget to normalize your view direct vector!
+	viewRay.dir = normalize(viewRay.pos - cameraPosition);
 
 	col = vec4(trace(viewRay), 1.0);
 
