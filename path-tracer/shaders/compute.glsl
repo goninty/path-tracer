@@ -20,7 +20,7 @@ struct Sphere
 	vec3 color;
 };
 
-uniform Sphere sph = { vec3(0.0, 0.0, -1.5), 1.0, vec3(0.0, 0.0, 1.0) };
+uniform Sphere sph = { vec3(0.0, 0.0, -5.0), 1.0, vec3(0.0, 0.0, 1.0) };
 
 vec3 trace(struct Ray viewRay)
 {
@@ -39,15 +39,15 @@ vec3 trace(struct Ray viewRay)
 		float t = min(t1, t2);
 		//return vec3(t, t, t);
 		// calculate hit point
-		vec3 hitPos = normalize(viewRay.pos + t);
+		vec3 hitPos = viewRay.pos + t*viewRay.dir;
 		//return hitPos;
 		// calclulate normal at hit point
-		vec3 normal = (hitPos - sph.center);
+		vec3 normal = normalize(hitPos - sph.center);
 		//return normal;
 
 		//return hitPos;
 
-		float ndotl = clamp(dot(normal, -0.5*directionalLight), 0.0, 1.0);
+		float ndotl = clamp(dot(normal, normalize(-directionalLight)), 0.0, 1.0);
 		
 		//if (col < 0.62)
 		//{
@@ -77,7 +77,7 @@ void main()
 
 	struct Ray viewRay;
 	viewRay.pos = vec3(x, y, -1.0);
-	// don't forget to normalize your view direct vector!
+	// don't forget to normalize your view direction vector!
 	viewRay.dir = normalize(viewRay.pos - cameraPosition);
 
 	col = vec4(trace(viewRay), 1.0);
