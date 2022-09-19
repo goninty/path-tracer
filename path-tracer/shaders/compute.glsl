@@ -13,6 +13,31 @@ struct Ray
 	vec3 dir;
 };
 
+struct Hit
+{
+	bool flag;
+	float t;
+	vec3 pos;
+};
+
+// Create enum to hold type of objects? Instead of strings.
+
+struct Object
+{
+	// GLSL does not have strings.
+	// 0 = sphere, 1 = plane.
+	int type;
+	vec3 center;
+
+	// Sphere
+	float radius;
+
+	// Plane
+	vec3 normal;
+
+	vec3 color;
+};
+
 struct Sphere
 {
 	vec3 center;
@@ -20,43 +45,64 @@ struct Sphere
 	vec3 color;
 };
 
-uniform Sphere sph = { vec3(0.0, 0.0, -5.0), 1.0, vec3(0.0, 0.0, 1.0) };
 
-vec3 trace(struct Ray viewRay)
+//uniform Object pl = { 0, vec3(0.0, -2.0, -5.0), 2.0, vec3(0), vec3(0.0, 1.0, 0.0) };
+uniform Object pl = {1, vec3(0.0, -1.0, 0.0), 0.0, vec3(0.0, -1.0, 0.0), vec3(0.5, 0.5, 0.5) };
+//uniform Sphere sph = { vec3(0.0, 0.0, -5.0), 2.0, vec3(0.0, 1.0, 0.0) };
+
+//uniform Object plane;
+
+// out keyword gives pass by reference (without initialization) (kind of?)
+// intersection test
+bool intersect(const in Ray ray, out Hit hit, const in Object obj)
 {
-	
-	float a = dot(viewRay.dir, viewRay.dir);
-	float b = dot(2 * viewRay.dir, (viewRay.pos - sph.center));
-	float c = dot(viewRay.pos - sph.center, viewRay.pos - sph.center) - (sph.radius*sph.radius);
-
-	// check discriminant first
-	// if discriminant is positive, there's intersection
-	if (sqrt(b*b - 4*a*c) >= 0.0)
+	if (obj.type == 0)
 	{
-		float t1 = (-b - sqrt(b*b - 4*a*c)) / 2*a;
-		float t2 = (-b + sqrt(b*b - 4*a*c)) / 2*a;
+		const float a = dot(ray.dir, ray.dir);
+		const float b = dot(2 * ray.dir, (ray.pos - obj.center));
+		const float c = dot(ray.pos - obj.center, ray.pos - obj.center) - (obj.radius*obj.radius);
 
-		float t = min(t1, t2);
-		//return vec3(t, t, t);
-		// calculate hit point
-		vec3 hitPos = viewRay.pos + t*viewRay.dir;
-		//return hitPos;
-		// calclulate normal at hit point
-		vec3 normal = normalize(hitPos - sph.center);
-		//return normal;
-
-		//return hitPos;
-
-		float ndotl = clamp(dot(normal, normalize(-directionalLight)), 0.0, 1.0);
+		if (sqrt(b*b - 4*a*c) >= 0) 
+		{
+			float t1 = (-b - sqrt(b*b - 4*a*c)) / 2*a;
+			float t2 = (-b + sqrt(b*b - 4*a*c)) / 2*a;
+			float t = min(t1, t2);
 		
-		//if (col < 0.62)
-		//{
-		//	col = col*5;
-		//}
-		
-		//return sph.color;
-		return sph.color * ndotl;
-		//return vec3(col, col, col);
+			hit.t = t;
+			hit.pos = ray.pos + t*ray.dir;
+			hit.flag = true;
+			return true;
+		}
+	}
+	else if (obj.type == 1)
+	{
+		// get ray and plane parallel?
+		// then check if dot product of ray and normal == 0 (or maybe >0)
+		float denom = dot(pl.normal, ray.dir);
+		if (denom == 0) return false;
+
+		float t = dot(pl.center - ray.pos, pl.normal)  / dot(pl.normal, ray.dir);
+		if ( t >= 0)
+		{
+			return true;
+		}
+
+	}
+
+	// unknown object type
+	return false;
+}
+
+vec3 trace(const in Ray viewRay)
+{	
+	Hit hh;
+	
+	if (intersect(viewRay, hh, pl))
+	{
+		// adding color
+		vec3 normal = normalize(hh.pos - pl.center);
+		float ndotl = clamp(dot(normal, normalize(-directionalLight)), 0.05, 1.0);
+		return pl.color * ndotl;
 	}
 
 	return vec3(0, 0, 0);
@@ -75,7 +121,7 @@ void main()
 	float x = (float(pixelCoord.x * 2 - size.x) / size.x);
 	float y = (float(pixelCoord.y * 2 - size.y) / size.y);
 
-	struct Ray viewRay;
+	Ray viewRay;
 	viewRay.pos = vec3(x, y, -1.0);
 	// don't forget to normalize your view direction vector!
 	viewRay.dir = normalize(viewRay.pos - cameraPosition);
