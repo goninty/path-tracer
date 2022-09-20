@@ -1,4 +1,4 @@
-#include "computeShader.h"
+#include "ComputeShader.h"
 
 #include <GL/glew.h>
 
@@ -42,6 +42,11 @@ void ComputeShader::createShader(const char* csSrc)
     glValidateProgram(shaderProgramId);
 
     glDeleteShader(csId);
+}
+
+int ComputeShader::getUniformLocation(const char* uniformName)
+{
+    return glGetUniformLocation(shaderProgramId, uniformName);
 }
 
 void ComputeShader::bind()

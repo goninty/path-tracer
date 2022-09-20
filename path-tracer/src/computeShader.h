@@ -6,6 +6,8 @@ public:
 	ComputeShader(const char* csPath);
 	~ComputeShader();
 
+	//void assignToUniform(const char* uniformName, glm)
+	int getUniformLocation(const char* uniformName);
 	void bind();
 	//void update(float r, float g, float b, float a);
 

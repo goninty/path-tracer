@@ -10,11 +10,33 @@
 #include <GLFW/glfw3.h>
 #include <glm.hpp>
 
-#include "shader.h"
-#include "computeShader.h"
+#include "Shader.h"
+#include "ComputeShader.h"
+#include "Camera.h";
 
 #define WINDOW_WIDTH 512
 #define WINDOW_HEIGHT 512
+
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    if (action == GLFW_RELEASE) return;
+    
+    switch (key)
+    {
+        case GLFW_KEY_W:
+            std::cout << scancode << std::endl;
+            break;
+        case GLFW_KEY_A:
+            std::cout << scancode << std::endl;
+            break;
+        case GLFW_KEY_S:
+            std::cout << scancode << std::endl;
+            break;
+        case GLFW_KEY_D:
+            std::cout << scancode << std::endl;
+            break;
+    }
+}
 
 int main()
 {
@@ -38,7 +60,7 @@ int main()
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
 
-    /* Initialise GLEW only once an OpenGL has been created */
+    /* Initialise GLEW only once an OpenGL context has been created */
     if (glewInit() != GLEW_OK)
     {
         return -1;
@@ -107,6 +129,20 @@ int main()
     /* Compute shader */
     ComputeShader computeShader = ComputeShader("./shaders/compute.glsl");
 
+    /* Positionable camera init */
+    Camera camera = Camera();
+    // Need to feed camera position and look(?) to compute shader.
+    unsigned int camPosLocation = computeShader.getUniformLocation("cameraPosition");
+    glm::vec3 campos = camera.getPos();
+
+    if (camPosLocation >= 0)
+    {
+        std::cout << "deez" << std::endl;
+        //glUniform3f(camPosLocation, 5.0f, 0.0f, 0.0f);
+    }
+
+    /* Set callback for GLFW keyboard input */
+    glfwSetKeyCallback(window, keyCallback);
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))

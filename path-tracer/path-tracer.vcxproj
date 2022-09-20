@@ -19,9 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\computeShader.cpp" />
+    <ClCompile Include="src\Camera.cpp" />
+    <ClCompile Include="src\ComputeShader.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\shader.cpp" />
+    <ClCompile Include="src\Shader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\compute.glsl" />
@@ -29,8 +30,9 @@
     <None Include="shaders\vertex.glsl" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\computeShader.h" />
-    <ClInclude Include="src\shader.h" />
+    <ClInclude Include="src\Camera.h" />
+    <ClInclude Include="src\ComputeShader.h" />
+    <ClInclude Include="src\Shader.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

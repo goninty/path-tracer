@@ -51,9 +51,9 @@ void intersect(const in Ray ray, inout Hit hit, const in Object obj)
 {
 	if (obj.type == 0)
 	{
-		const float a = dot(ray.dir, ray.dir);
-		const float b = dot(2 * ray.dir, (ray.pos - obj.center));
-		const float c = dot(ray.pos - obj.center, ray.pos - obj.center) - (obj.radius*obj.radius);
+		float a = dot(ray.dir, ray.dir);
+		float b = dot(2 * ray.dir, (ray.pos - obj.center));
+		float c = dot(ray.pos - obj.center, ray.pos - obj.center) - (obj.radius*obj.radius);
 
 		if (sqrt(b*b - 4*a*c) >= 0) 
 		{
@@ -106,7 +106,7 @@ vec3 trace(const in Ray ray)
 			// adding color
 			float ndotl = clamp(dot(hit.normal, normalize(-directionalLight)), 0.05, 1.0);
 
-			return scene[i].color * ndotl;
+			return /*hit.normal*/scene[i].color * ndotl;
 		}
 	}
 
@@ -120,6 +120,7 @@ void main()
 	ivec2 pixelCoord = ivec2(gl_GlobalInvocationID.xy);
 
 	// image/screen/texture size
+	// in pixels
 	vec2 size = imageSize(screen);
 
 	// calculate x and y components of view ray from pixel co-ord
@@ -127,7 +128,8 @@ void main()
 	float y = (float(pixelCoord.y * 2 - size.y) / size.y);
 
 	Ray viewRay;
-	viewRay.pos = vec3(x, y, -1.0);
+	// add camera position to move near plane when camera moves
+	viewRay.pos = vec3(x, y, -1.0) + cameraPosition;
 	// don't forget to normalize your view direction vector!
 	viewRay.dir = normalize(viewRay.pos - cameraPosition);
 
@@ -137,8 +139,8 @@ void main()
 	Object pl = { 1, vec3(0.0, -2.0, 0.0), vec3(0.5, 0.5, 0.5), 0.0, vec3(0.0, 1.0, 0.0)};
 	scene[1] = pl;
 
-
 	col = vec4(trace(viewRay), 1.0);
+	//col = vec4(abs(x), abs(y), 0.0, 1.0);
 
 	imageStore(screen, pixelCoord, col);
 }
