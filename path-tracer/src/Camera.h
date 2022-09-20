@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm.hpp>
+#include <gtc/matrix_transform.hpp>
 
 //#define look glm::vec3(0.0, 0.0, -1.0);
 //#define up glm::vec3(0.0, 1.0, 0.0);
@@ -26,6 +27,8 @@ private:
 	glm::vec3 u = glm::cross(up, w) / glm::length(glm::cross(up, w));
 	glm::vec3 v = glm::cross(w, u);
 
+	//glm::mat4 viewMatrix = glm::lookAt(pos, look, up);
+
 	// distance to near viewing plane
 	glm::vec3 s = glm::vec3(0.0, 0.0, -1.0);
 
@@ -34,10 +37,10 @@ private:
 public:
 	Camera();
 	~Camera();
+	glm::mat4 viewMatrix = glm::lookAt(pos, look, up);
 	glm::vec3 getPos() const;
 	void moveForward();
 	void moveBackward();
 	void moveLeft();
 	void moveRight();
-
 };

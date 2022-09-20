@@ -8,6 +8,8 @@ uniform vec3 cameraPosition;// = vec3(0.0, 0.0, 0.0);
 uniform vec3 directionalLight = vec3(1.0, -1.0, -1.0);
 //uniform vec3 directionalLight = vec3(0, 0.0, -1.0);
 
+uniform mat4 inverseView;
+
 struct Ray
 {
 	vec3 pos;
@@ -127,9 +129,16 @@ void main()
 	float x = (float(pixelCoord.x * 2 - size.x) / size.x);
 	float y = (float(pixelCoord.y * 2 - size.y) / size.y);
 
+	vec3 lookAt = vec3(0.0, 0.0, -1.0);
+	//campos is pos, lookat is dir
+
 	Ray viewRay;
 	// add camera position to move near plane when camera moves
-	viewRay.pos = vec3(x, y, -1.0) + cameraPosition;
+	// x, y, -1.0 is in "camera coordinates" or some relative position to the camera
+	// need to transform that then to the world space coordinates
+	// how?
+	vec4 temp = vec4(x, y, -1.0, 1.0)*inverseView;
+	viewRay.pos = vec3(temp.x, temp.y, temp.z) + cameraPosition;
 	// don't forget to normalize your view direction vector!
 	viewRay.dir = normalize(viewRay.pos - cameraPosition);
 
