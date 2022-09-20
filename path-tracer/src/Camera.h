@@ -11,6 +11,9 @@ class Camera
 private:
 	glm::vec3 pos = glm::vec3(0.0, 0.0, 0.0);
 
+	// there is a fair amount of duplication here
+	// (look, up, right and w, u, v are synomous save for a negative sign here or there)
+
 	// set default values for these vectors
 	glm::vec3 look = glm::vec3(0.0, 0.0, -1.0); 
 	glm::vec3 up = glm::vec3(0.0, 1.0, 0.0);
@@ -26,8 +29,15 @@ private:
 	// distance to near viewing plane
 	glm::vec3 s = glm::vec3(0.0, 0.0, -1.0);
 
+	float speed = 0.5f;
+
 public:
 	Camera();
 	~Camera();
 	glm::vec3 getPos() const;
+	void moveForward();
+	void moveBackward();
+	void moveLeft();
+	void moveRight();
+
 };

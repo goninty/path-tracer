@@ -9,6 +9,7 @@
 /* As we are statically linking GLEW */
 #include <GLFW/glfw3.h>
 #include <glm.hpp>
+#include <gtc/type_ptr.hpp>
 
 #include "Shader.h"
 #include "ComputeShader.h"
@@ -20,20 +21,22 @@
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     if (action == GLFW_RELEASE) return;
+
+    Camera* cam = (Camera*)glfwGetWindowUserPointer(window);
     
     switch (key)
     {
         case GLFW_KEY_W:
-            std::cout << scancode << std::endl;
+            cam->moveForward();
             break;
         case GLFW_KEY_A:
-            std::cout << scancode << std::endl;
+            cam->moveLeft();
             break;
         case GLFW_KEY_S:
-            std::cout << scancode << std::endl;
+            cam->moveBackward();
             break;
         case GLFW_KEY_D:
-            std::cout << scancode << std::endl;
+            cam->moveRight();
             break;
     }
 }
@@ -133,14 +136,8 @@ int main()
     Camera camera = Camera();
     // Need to feed camera position and look(?) to compute shader.
     unsigned int camPosLocation = computeShader.getUniformLocation("cameraPosition");
-    glm::vec3 campos = camera.getPos();
-
-    if (camPosLocation >= 0)
-    {
-        std::cout << "deez" << std::endl;
-        //glUniform3f(camPosLocation, 5.0f, 0.0f, 0.0f);
-    }
-
+    
+    glfwSetWindowUserPointer(window, &camera);
     /* Set callback for GLFW keyboard input */
     glfwSetKeyCallback(window, keyCallback);
 
@@ -149,6 +146,8 @@ int main()
     {
         /* Render here */
         computeShader.bind();
+        // Upload (write) to uniform variable.
+        if (camPosLocation >= 0) glUniform3fv(camPosLocation, 1, glm::value_ptr(camera.getPos()));
         glDispatchCompute((unsigned int)WINDOW_WIDTH, (unsigned int)WINDOW_HEIGHT, 1);
         // Barrier (stop execution) to ensure data writing is finished before access.
         glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
