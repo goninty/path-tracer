@@ -46,7 +46,7 @@ Object scene[3];
 
 // out keyword gives pass by reference (without initialization) (kind of?)
 // intersection test
-void intersect(const in Ray ray, inout Hit hit, const in Object obj)
+void intersect(const in Ray ray, inout Hit hit, inout Object obj)
 {
 	if (obj.type == 0)
 	{
@@ -97,26 +97,22 @@ vec3 trace(const in Ray ray)
 {	
 	float t = 99999; // closest
 	Hit hit;
-	vec3 color = vec3(0.0, 0.0, 0.0);
-	hit.color = vec3(0.0, 0.0, 0.0);
-	vec3 normal = vec3(0.0, 0.0, 0.0);
+	Hit closestHit;
+	closestHit.color = vec3(0, 0, 0);
 
 	for (int i = 0; i < scene.length; i++)
 	{
 		hit.flag = false;
-		//hit.color = vec3(0.0, 0.0, 0.0);
-		hit.t = 99999;
 		intersect(ray, hit, scene[i]);
 		if (hit.flag && hit.t < t)
 		{
-			color = hit.color;
 			t = hit.t;
-			normal = hit.normal;
+			closestHit = hit;
 		}
 	}
 
-	float ndotl = clamp(dot(normal, normalize(-directionalLight)), 0.05, 1.0);
-	return color * ndotl;
+	float ndotl = clamp(dot(closestHit.normal, normalize(-directionalLight)), 0.05, 1.0);
+	return closestHit.color * ndotl;
 }
 
 
