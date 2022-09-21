@@ -41,6 +41,28 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     }
 }
 
+void cursorCallback(GLFWwindow* window, double xpos, double ypos)
+{
+    Camera* cam = (Camera*)glfwGetWindowUserPointer(window);
+
+    float sens = 2.0f;
+
+    glm::vec3 newLook;
+    // is this shoddy? i don't know. it works!
+    newLook.x = (xpos - (WINDOW_WIDTH / 2)) / WINDOW_WIDTH;
+    newLook.y = -(ypos - (WINDOW_HEIGHT / 2)) / WINDOW_HEIGHT;
+    newLook.z = -1.0f;
+
+    cam->setLook(newLook*sens);
+
+    //cam->setLook(glm::vec3((xpos - (WINDOW_WIDTH / 2))/WINDOW_WIDTH, 0.0, -1.0));
+
+    //cam->look = glm::vec3((xpos/WINDOW_WIDTH), cam->look.y, cam->look.z);
+
+    // need to alter look, up and then re-calculate right vectors appropriately
+    //std::cout << xpos-(WINDOW_WIDTH/2) << ", " << ypos-(WINDOW_HEIGHT/2) << std::endl;
+}
+
 int main()
 {
     GLFWwindow* window;
@@ -135,12 +157,13 @@ int main()
     // Need to feed camera position and look(?) to compute shader.
     unsigned int camPosLocation = computeShader.getUniformLocation("cameraPosition");
     unsigned int viewMatLocation = computeShader.getUniformLocation("viewMatrix");
-
-    glm::mat4 viewMat = camera.viewMatrix;
     
+    /* Set a GLFW pointer to camera object so it can be accessed easily in callback fucntions */
     glfwSetWindowUserPointer(window, &camera);
-    /* Set callback for GLFW keyboard input */
+    /* Set callbacks for GLFW keyboard and mouse input */
     glfwSetKeyCallback(window, keyCallback);
+    glfwSetCursorPosCallback(window, cursorCallback);
+    
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
@@ -149,7 +172,7 @@ int main()
         computeShader.bind();
         // Upload (write) to uniform variable.
         if (camPosLocation >= 0) glUniform3fv(camPosLocation, 1, glm::value_ptr(camera.getPos()));
-        if (viewMatLocation >= 0) glUniformMatrix4fv(viewMatLocation, 1, GL_FALSE, glm::value_ptr(viewMat));
+        if (viewMatLocation >= 0) glUniformMatrix4fv(viewMatLocation, 1, GL_FALSE, glm::value_ptr(camera.viewMatrix));
         glDispatchCompute((unsigned int)WINDOW_WIDTH, (unsigned int)WINDOW_HEIGHT, 1);
         // Barrier (stop execution) to ensure data writing is finished before access.
         glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);

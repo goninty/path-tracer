@@ -12,6 +12,12 @@ Camera::~Camera()
 
 glm::vec3 Camera::getPos() const { return pos; }
 
+void Camera::setLook(glm::vec3 newLook)
+{ 
+	look = newLook;
+	viewMatrix = glm::lookAt(pos, look + pos, up);
+}
+
 void Camera::moveForward()
 {
 	pos += look * speed;
@@ -24,11 +30,11 @@ void Camera::moveBackward()
 
 void Camera::moveLeft()
 {
-	pos -= u * speed;
+	pos -= right * speed;
 }
 
 void Camera::moveRight()
 {
-	pos += u * speed;
+	pos += right * speed;
 	//viewMatrix = glm::lookAt(pos, look, up);
 }

@@ -2,6 +2,7 @@
 
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
+#include <gtx/string_cast.hpp>
 
 //#define look glm::vec3(0.0, 0.0, -1.0);
 //#define up glm::vec3(0.0, 1.0, 0.0);
@@ -43,6 +44,13 @@ public:
 	// hence it needs to be translated by pos
 	glm::mat4 viewMatrix = glm::lookAt(pos, look+pos, up);
 	glm::vec3 getPos() const;
+	
+	/*glm::vec3 look = glm::vec3(0.0, 0.0, -1.0);
+	glm::vec3 up = glm::vec3(0.0, 1.0, 0.0);
+	glm::vec3 right = glm::cross(look, up);*/
+
+	void setLook(glm::vec3 newLook);
+
 	void moveForward();
 	void moveBackward();
 	void moveLeft();

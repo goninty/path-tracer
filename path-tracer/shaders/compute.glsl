@@ -130,9 +130,6 @@ void main()
 	float x = (float(pixelCoord.x * 2 - size.x) / size.x);
 	float y = (float(pixelCoord.y * 2 - size.y) / size.y);
 
-	vec3 lookAt = vec3(0.0, 0.0, -1.0);
-	//campos is pos, lookat is dir
-
 	Ray viewRay;
 	// add camera position to move near plane when camera moves
 	// x, y, -1.0 is in "camera coordinates" or some relative position to the camera
