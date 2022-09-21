@@ -23,9 +23,9 @@ private:
 	// ||g|| means length of g vector
 	// create orthonormal uvw basis
 	// use glm::normalize instead?
-	glm::vec3 w = -look / glm::length(look);
-	glm::vec3 u = glm::cross(up, w) / glm::length(glm::cross(up, w));
-	glm::vec3 v = glm::cross(w, u);
+	glm::vec3 w = glm::normalize(-look);// -look / glm::length(look);
+	glm::vec3 u = glm::normalize(glm::cross(up, w));// / glm::length(glm::cross(up, w));
+	glm::vec3 v = glm::normalize(glm::cross(w, u));
 
 	//glm::mat4 viewMatrix = glm::lookAt(pos, look, up);
 
@@ -37,7 +37,11 @@ private:
 public:
 	Camera();
 	~Camera();
-	glm::mat4 viewMatrix = glm::lookAt(pos, look, up);
+	// note that the middle value (center)
+	// glm takes to be a point you're looking at
+	// rather than a lookAt vector
+	// hence it needs to be translated by pos
+	glm::mat4 viewMatrix = glm::lookAt(pos, look+pos, up);
 	glm::vec3 getPos() const;
 	void moveForward();
 	void moveBackward();

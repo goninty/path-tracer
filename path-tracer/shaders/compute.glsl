@@ -8,7 +8,7 @@ uniform vec3 cameraPosition;// = vec3(0.0, 0.0, 0.0);
 uniform vec3 directionalLight = vec3(1.0, -1.0, -1.0);
 //uniform vec3 directionalLight = vec3(0, 0.0, -1.0);
 
-uniform mat4 inverseView;
+uniform mat4 viewMatrix;
 
 struct Ray
 {
@@ -62,8 +62,9 @@ void intersect(const in Ray ray, inout Hit hit, const in Object obj)
 			float t1 = (-b - sqrt(b*b - 4*a*c)) / 2*a;
 			float t2 = (-b + sqrt(b*b - 4*a*c)) / 2*a;
 			float t = min(t1, t2);
+
 						
-			hit.t = t;
+			hit.t = t; 
 			hit.pos = ray.pos + t*ray.dir;
 			hit.normal = normalize(hit.pos - obj.center);
 			hit.flag = true;
@@ -137,7 +138,7 @@ void main()
 	// x, y, -1.0 is in "camera coordinates" or some relative position to the camera
 	// need to transform that then to the world space coordinates
 	// how?
-	vec4 temp = vec4(x, y, -1.0, 1.0)*inverseView;
+	vec4 temp = vec4(x, y, -1.0, 1.0)*viewMatrix;
 	viewRay.pos = vec3(temp.x, temp.y, temp.z) + cameraPosition;
 	// don't forget to normalize your view direction vector!
 	viewRay.dir = normalize(viewRay.pos - cameraPosition);

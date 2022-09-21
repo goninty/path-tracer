@@ -134,9 +134,9 @@ int main()
     Camera camera = Camera();
     // Need to feed camera position and look(?) to compute shader.
     unsigned int camPosLocation = computeShader.getUniformLocation("cameraPosition");
-    unsigned int invViewMatLocation = computeShader.getUniformLocation("inverseView");
+    unsigned int viewMatLocation = computeShader.getUniformLocation("viewMatrix");
 
-    glm::mat4 invViewMat = glm::inverse(camera.viewMatrix);
+    glm::mat4 viewMat = camera.viewMatrix;
     
     glfwSetWindowUserPointer(window, &camera);
     /* Set callback for GLFW keyboard input */
@@ -149,7 +149,7 @@ int main()
         computeShader.bind();
         // Upload (write) to uniform variable.
         if (camPosLocation >= 0) glUniform3fv(camPosLocation, 1, glm::value_ptr(camera.getPos()));
-        if (invViewMatLocation >= 0) glUniformMatrix4fv(invViewMatLocation, 1, GL_FALSE, glm::value_ptr(invViewMat));
+        if (viewMatLocation >= 0) glUniformMatrix4fv(viewMatLocation, 1, GL_FALSE, glm::value_ptr(viewMat));
         glDispatchCompute((unsigned int)WINDOW_WIDTH, (unsigned int)WINDOW_HEIGHT, 1);
         // Barrier (stop execution) to ensure data writing is finished before access.
         glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);

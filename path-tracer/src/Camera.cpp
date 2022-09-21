@@ -24,10 +24,11 @@ void Camera::moveBackward()
 
 void Camera::moveLeft()
 {
-	pos -= right * speed;
+	pos -= u * speed;
 }
 
 void Camera::moveRight()
 {
-	pos += right * speed;
+	pos += u * speed;
+	//viewMatrix = glm::lookAt(pos, look, up);
 }
