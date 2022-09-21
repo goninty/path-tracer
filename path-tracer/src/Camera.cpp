@@ -12,6 +12,8 @@ Camera::~Camera()
 
 glm::vec3 Camera::getPos() const { return pos; }
 
+glm::vec3 Camera::getLook() const { return look; }
+
 void Camera::setLook(glm::vec3 newLook)
 { 
 	look = newLook;

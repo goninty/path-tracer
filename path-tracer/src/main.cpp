@@ -10,6 +10,7 @@
 #include <GLFW/glfw3.h>
 #include <glm.hpp>
 #include <gtc/type_ptr.hpp>
+#include <gtx/string_cast.hpp>
 
 #include "Shader.h"
 #include "ComputeShader.h"
@@ -50,23 +51,35 @@ void cursorCallback(GLFWwindow* window, double xpos, double ypos)
     //std::cout << xpos << ", " << ypos << std::endl;
     // read current look?
 
+    //std::cout << xpos << std::endl;
+    float mouseX = (int)xpos % WINDOW_WIDTH;
+    //std::cout << xpos << ", "<< mouseX << std::endl;
+    //std::cout << ((float)mouseX - WINDOW_WIDTH / 2) / (WINDOW_WIDTH / 2) << std::endl;
+
     float sens = 2.0f;
+
+    std::cout << glm::to_string(cam->getLook()) << std::endl;
 
     glm::vec3 newLook;
     // is this shoddy? i don't know. it works!
-    newLook.x = (xpos-WINDOW_WIDTH/2) / (WINDOW_WIDTH/2);// / WINDOW_WIDTH;
+    newLook.x = (mouseX-WINDOW_WIDTH/2) / (WINDOW_WIDTH/2);// / WINDOW_WIDTH;
     newLook.y = -(ypos - (WINDOW_HEIGHT/2)) / (WINDOW_HEIGHT/2);
-    newLook.z = -1.0f;
+    newLook.z = -1.0f - newLook.x;
 
-    if (newLook.x >= 1.0f || newLook.x <= -1.0f)
+    //if (newLook.x == -1.0f)
+    //{
+    //    newLook.z = -newLook.z;
+    //    //newLook.x = (1.0f - mouseX - WINDOW_WIDTH / 2) / (WINDOW_WIDTH / 2);
+    //}
+
+    /*if (newLook.x >= 1.0f)
     {
         newLook.z = -newLook.z;
-        newLook.x = (xpos + WINDOW_WIDTH / 2) / (WINDOW_WIDTH / 2);
-    }
+    }*/
 
     //std::cout << newLook.x << std::endl;
 
-    //cam->setLook(newLook/**sens*/);
+    cam->setLook(newLook/**sens*/);
 }
 
 int main()
@@ -168,7 +181,7 @@ int main()
     glfwSetWindowUserPointer(window, &camera);
     /* Set callbacks for GLFW keyboard and mouse input */
     glfwSetKeyCallback(window, keyCallback);
-    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetCursorPosCallback(window, cursorCallback);
     
 

@@ -2,7 +2,6 @@
 
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
-#include <gtx/string_cast.hpp>
 
 //#define look glm::vec3(0.0, 0.0, -1.0);
 //#define up glm::vec3(0.0, 1.0, 0.0);
@@ -49,6 +48,7 @@ public:
 	glm::vec3 up = glm::vec3(0.0, 1.0, 0.0);
 	glm::vec3 right = glm::cross(look, up);*/
 
+	glm::vec3 getLook() const;
 	void setLook(glm::vec3 newLook);
 
 	void moveForward();

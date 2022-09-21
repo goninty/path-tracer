@@ -140,7 +140,7 @@ void main()
 	viewRay.dir = normalize(viewRay.pos - cameraPosition);
 
 	// populate scene
-	Object sph = { 0, vec3(0.0, 0.0, -3.0), vec3(0.0, 1.0, 0.0), 2.0, vec3(0)};
+	Object sph = { 0, vec3(0.0, 0.0, -5.0), vec3(0.0, 1.0, 0.0), 2.0, vec3(0)};
 	scene[0] = sph;
 	Object sph2 = { 0, vec3(0.0, 0.0, 5.0), vec3(1.0, 0.0, 0.0), 2.0, vec3(0)};
 	scene[1] = sph2;
