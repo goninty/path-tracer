@@ -22,6 +22,8 @@ struct Hit
 	float t;
 	vec3 pos;
 	vec3 normal;
+	vec3 color; // figure out a better way to do this?
+	// ie try to store a hit.what, if possible
 };
 
 struct Object
@@ -41,11 +43,6 @@ struct Sphere
 };
 
 Object scene[3];
-//uniform Object pl = { 0, vec3(0.0, -2.0, -5.0), 2.0, vec3(0), vec3(0.0, 1.0, 0.0) };
-//uniform Object pl = {1, vec3(0.0, -1.0, 0.0), 0.0, vec3(0.0, -1.0, 0.0), vec3(0.5, 0.5, 0.5) };
-//uniform Sphere sph = { vec3(0.0, 0.0, -5.0), 2.0, vec3(0.0, 1.0, 0.0) };
-
-//uniform Object plane;
 
 // out keyword gives pass by reference (without initialization) (kind of?)
 // intersection test
@@ -54,20 +51,27 @@ void intersect(const in Ray ray, inout Hit hit, const in Object obj)
 	if (obj.type == 0)
 	{
 		float a = dot(ray.dir, ray.dir);
-		float b = dot(2 * ray.dir, (ray.pos - obj.center));
+		float b = 2 * dot(ray.dir, (ray.pos - obj.center));
 		float c = dot(ray.pos - obj.center, ray.pos - obj.center) - (obj.radius*obj.radius);
-
-		if (sqrt(b*b - 4*a*c) >= 0) 
+		
+		if (sqrt(b*b - 4*a*c) >= 0.0) 
 		{
 			float t1 = (-b - sqrt(b*b - 4*a*c)) / 2*a;
 			float t2 = (-b + sqrt(b*b - 4*a*c)) / 2*a;
-			float t = min(t1, t2);
 
-						
-			hit.t = t; 
-			hit.pos = ray.pos + t*ray.dir;
-			hit.normal = normalize(hit.pos - obj.center);
-			hit.flag = true;
+			if (t2 < 0) return;
+			float t = t1;
+
+			// the below if statement was dredged from my CM30075 coursework
+			// and fixed a bug I had been chasing for hours...
+			if (t > 0)
+			{
+				hit.t = t; 
+				hit.pos = ray.pos + t*ray.dir;
+				hit.normal = normalize(hit.pos - obj.center);
+				hit.color = obj.color;
+				hit.flag = true;
+			}
 		}
 	}
 	else if (obj.type == 1)
@@ -75,45 +79,44 @@ void intersect(const in Ray ray, inout Hit hit, const in Object obj)
 		// get ray and plane parallel?
 		// then check if dot product of ray and normal == 0 (or maybe >0)
 		float denom = dot(obj.normal, ray.dir);
-		//if (denom == 0) return;
 
 		float t = dot(obj.center - ray.pos, obj.normal) / denom;
-		if (t >= 0)
+		if (t > 0)
 		{
 			hit.t = t;
 			hit.pos = ray.pos + t*ray.dir;
 			hit.normal = obj.normal;
+			hit.color = obj.color;
 			hit.flag = true;
-			//return true;
 		}
 
 	}
-
-	// unknown object type
-	//return false;
 }
 
 vec3 trace(const in Ray ray)
 {	
-	float t = 99999;
+	float t = 99999; // closest
 	Hit hit;
+	vec3 color = vec3(0.0, 0.0, 0.0);
+	hit.color = vec3(0.0, 0.0, 0.0);
+	vec3 normal = vec3(0.0, 0.0, 0.0);
 
 	for (int i = 0; i < scene.length; i++)
 	{
 		hit.flag = false;
+		//hit.color = vec3(0.0, 0.0, 0.0);
 		hit.t = 99999;
 		intersect(ray, hit, scene[i]);
 		if (hit.flag && hit.t < t)
 		{
+			color = hit.color;
 			t = hit.t;
-			// adding color
-			float ndotl = clamp(dot(hit.normal, normalize(-directionalLight)), 0.05, 1.0);
-
-			return /*hit.normal*/scene[i].color * ndotl;
+			normal = hit.normal;
 		}
 	}
 
-	return vec3(0, 0, 0);
+	float ndotl = clamp(dot(normal, normalize(-directionalLight)), 0.05, 1.0);
+	return color * ndotl;
 }
 
 
@@ -139,19 +142,17 @@ void main()
 	viewRay.pos = vec3(temp.x, temp.y, temp.z) + cameraPosition;
 	// don't forget to normalize your view direction vector!
 	viewRay.dir = normalize(viewRay.pos - cameraPosition);
-	//viewRay.pos = cameraPosition;
 
 	// populate scene
-	Object sph = { 0, vec3(0.0, 0.0, -5.0), vec3(0.0, 1.0, 0.0), 2.0, vec3(0)};
+	Object sph = { 0, vec3(0.0, 0.0, -3.0), vec3(0.0, 1.0, 0.0), 2.0, vec3(0)};
 	scene[0] = sph;
-	//Object sph2 = { 0, vec3(0.0, 0.0, 5.0), vec3(1.0, 0.0, 0.0), 2.0, vec3(0)};
-	//scene[1] = sph2;
+	Object sph2 = { 0, vec3(0.0, 0.0, 5.0), vec3(1.0, 0.0, 0.0), 2.0, vec3(0)};
+	scene[1] = sph2;
 	Object pl = { 1, vec3(0.0, -2.0, 0.0), vec3(0.5, 0.5, 0.5), 0.0, vec3(0.0, 1.0, 0.0)};
-	scene[1] = pl;
+	scene[2] = pl;
 	
-
+	
 	col = vec4(trace(viewRay), 1.0);
-	//col = vec4(abs(x), abs(y), 0.0, 1.0);
 
 	imageStore(screen, pixelCoord, col);
 }
