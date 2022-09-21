@@ -45,22 +45,28 @@ void cursorCallback(GLFWwindow* window, double xpos, double ypos)
 {
     Camera* cam = (Camera*)glfwGetWindowUserPointer(window);
 
+    // top left: (0,0)
+    // bottom right: (width-1, height-1)
+    //std::cout << xpos << ", " << ypos << std::endl;
+    // read current look?
+
     float sens = 2.0f;
 
     glm::vec3 newLook;
     // is this shoddy? i don't know. it works!
-    newLook.x = (xpos - (WINDOW_WIDTH / 2)) / WINDOW_WIDTH;
-    newLook.y = -(ypos - (WINDOW_HEIGHT / 2)) / WINDOW_HEIGHT;
+    newLook.x = (xpos-WINDOW_WIDTH/2) / (WINDOW_WIDTH/2);// / WINDOW_WIDTH;
+    newLook.y = -(ypos - (WINDOW_HEIGHT/2)) / (WINDOW_HEIGHT/2);
     newLook.z = -1.0f;
 
-    cam->setLook(newLook*sens);
+    if (newLook.x >= 1.0f || newLook.x <= -1.0f)
+    {
+        newLook.z = -newLook.z;
+        newLook.x = (xpos + WINDOW_WIDTH / 2) / (WINDOW_WIDTH / 2);
+    }
 
-    //cam->setLook(glm::vec3((xpos - (WINDOW_WIDTH / 2))/WINDOW_WIDTH, 0.0, -1.0));
+    //std::cout << newLook.x << std::endl;
 
-    //cam->look = glm::vec3((xpos/WINDOW_WIDTH), cam->look.y, cam->look.z);
-
-    // need to alter look, up and then re-calculate right vectors appropriately
-    //std::cout << xpos-(WINDOW_WIDTH/2) << ", " << ypos-(WINDOW_HEIGHT/2) << std::endl;
+    //cam->setLook(newLook/**sens*/);
 }
 
 int main()
@@ -162,6 +168,7 @@ int main()
     glfwSetWindowUserPointer(window, &camera);
     /* Set callbacks for GLFW keyboard and mouse input */
     glfwSetKeyCallback(window, keyCallback);
+    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetCursorPosCallback(window, cursorCallback);
     
 

@@ -40,7 +40,7 @@ struct Sphere
 	vec3 color;
 };
 
-Object scene[2];
+Object scene[3];
 //uniform Object pl = { 0, vec3(0.0, -2.0, -5.0), 2.0, vec3(0), vec3(0.0, 1.0, 0.0) };
 //uniform Object pl = {1, vec3(0.0, -1.0, 0.0), 0.0, vec3(0.0, -1.0, 0.0), vec3(0.5, 0.5, 0.5) };
 //uniform Sphere sph = { vec3(0.0, 0.0, -5.0), 2.0, vec3(0.0, 1.0, 0.0) };
@@ -139,12 +139,16 @@ void main()
 	viewRay.pos = vec3(temp.x, temp.y, temp.z) + cameraPosition;
 	// don't forget to normalize your view direction vector!
 	viewRay.dir = normalize(viewRay.pos - cameraPosition);
+	//viewRay.pos = cameraPosition;
 
 	// populate scene
 	Object sph = { 0, vec3(0.0, 0.0, -5.0), vec3(0.0, 1.0, 0.0), 2.0, vec3(0)};
 	scene[0] = sph;
+	//Object sph2 = { 0, vec3(0.0, 0.0, 5.0), vec3(1.0, 0.0, 0.0), 2.0, vec3(0)};
+	//scene[1] = sph2;
 	Object pl = { 1, vec3(0.0, -2.0, 0.0), vec3(0.5, 0.5, 0.5), 0.0, vec3(0.0, 1.0, 0.0)};
 	scene[1] = pl;
+	
 
 	col = vec4(trace(viewRay), 1.0);
 	//col = vec4(abs(x), abs(y), 0.0, 1.0);
