@@ -136,12 +136,6 @@ void main()
 	viewRay.dir = normalize(viewRay.pos - cameraPosition);
 	viewRay.pos = cameraPosition;
 
-	/*
-	viewRay.pos = cameraPosition;
-	viewRay.dir = (vec3(x, y, -1.0));// + cameraPosition) - cameraPosition;
-	// don't forget to normalize your view ray direction vector!
-	viewRay.dir = normalize(viewRay.dir);
-	*/
 	// populate scene
 	Object sph = { 0, vec3(0.0, 0.0, -5.0), vec3(0.0, 1.0, 0.0), 2.0, vec3(0)};
 	scene[0] = sph;
@@ -152,6 +146,5 @@ void main()
 	
 	
 	col = vec4(trace(viewRay), 1.0);
-
 	imageStore(screen, pixelCoord, col);
 }
