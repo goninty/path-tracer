@@ -17,10 +17,12 @@ OpenGL is used to render a quad and an empty texture is bound which the compute 
 
 ## TODO
 - ~~Ray trace.~~
-- Phong lighting.
+- Phong lighting (~~diffuse~~, specular).
 - Shadows.
+- Point lights.
+- Soft shadows.
 - Reflection / refraction.
-- Moveable camera.
+- ~~Moveable camera.~~
 - Read in mesh files (.obj).
 - Actually path trace.
 - Move scene information to C++ side (UBO).
