@@ -21,7 +21,7 @@
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 800
 
-#define CAN_USE_MOUSE false
+#define MOVEMENT false
 
 // Store these so we can calculate angles of mouse movement on each new frame.
 float lastMouseX = WINDOW_WIDTH / 2;
@@ -163,9 +163,9 @@ int main()
     /* Set a GLFW pointer to camera object so it can be accessed easily in callback fucntions */
     glfwSetWindowUserPointer(window, &camera);
     /* Set callbacks for GLFW keyboard and mouse input */
-    glfwSetKeyCallback(window, keyCallback);
-    if (CAN_USE_MOUSE)
+    if (MOVEMENT)
     {
+        glfwSetKeyCallback(window, keyCallback);
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         glfwSetCursorPosCallback(window, cursorCallback);
     }
@@ -177,13 +177,12 @@ int main()
     // Well, for orbiting camera our position will change
 
     // time innit
-    unsigned int timeLocation = computeShader.getUniformLocation("time");
-    long long then = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    /*unsigned int timeLocation = computeShader.getUniformLocation("time");
+    long long then = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();*/
 
     // i love c++ sometimes
     //long deez = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     //std::cout << deez << std::endl;
-    
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
@@ -196,9 +195,10 @@ int main()
         // Upload (write) to uniform variable.
         if (camPosLocation >= 0) glUniform3fv(camPosLocation, 1, glm::value_ptr(camera.getPos()));
         if (viewMatLocation >= 0) glUniformMatrix4fv(viewMatLocation, 1, GL_FALSE, glm::value_ptr(camera.viewMatrix));
-        long long now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+        
+        /*long long now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
         glUniform1i(timeLocation, (int)(now - then));
-        then = now;
+        then = now;*/
         
         glDispatchCompute((unsigned int)WINDOW_WIDTH, (unsigned int)WINDOW_HEIGHT, 1);
         // Barrier (stop execution) to ensure data writing is finished before access.

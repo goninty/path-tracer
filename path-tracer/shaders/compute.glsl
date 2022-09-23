@@ -5,12 +5,12 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 1) in;
 layout(rgba32f, binding = 0) uniform image2D screen;
 
 uniform vec3 cameraPosition;// = vec3(0.0, 0.0, 0.0);
-vec3 directionalLight = vec3(0.0, -1.0, 0.0);
+vec3 directionalLight = vec3(1.0, -1.0, -1.0);
 //uniform vec3 directionalLight = vec3(0, 0.0, -1.0);
 
 uniform mat4 viewMatrix;
 
-uniform int time;
+//uniform int time;
 
 struct Ray
 {
@@ -123,7 +123,7 @@ vec3 trace(const in Ray ray, inout Hit hit)
 	float t = 99999; // closest
 	Hit closestHit;
 	closestHit.flag = false;
-	closestHit.color = vec3(0, 0, 0);
+	closestHit.color = vec3(0.0, 0.0, 0.0);
 
 	for (int i = 0; i < scene.length; i++)
 	{
@@ -146,12 +146,17 @@ vec3 trace(const in Ray ray, inout Hit hit)
 
 void main()
 {
-	vec4 col = vec4(0.0, 0.0, 0.0, 1.0);
+	vec3 col = vec3(0.0, 0.0, 0.0);
 	ivec2 pixelCoord = ivec2(gl_GlobalInvocationID.xy);
 
 	// image/screen/texture size
 	// in pixels
 	vec2 size = imageSize(screen);
+
+	vec2 pixelSize;
+	// you do have permission to shoot me now
+	pixelSize.x = float(((size.x/2)+1) * 2 - size.x) / size.x;
+	pixelSize.y = float(((size.y/2)+1) * 2 - size.y) / size.y;
 
 	// calculate x and y components of view ray from pixel co-ord
 	float x = (float(pixelCoord.x * 2 - size.x) / size.x);
@@ -162,7 +167,9 @@ void main()
 	scene[0] = sph;
 	Object sph2 = { 0, vec3(2.5, 0.0, -7.0), vec3(1.0, 0.0, 0.0), 2.0, vec3(0)};
 	scene[1] = sph2;
-	Object pl = { 1, vec3(0.0, -2.0, 0.0), vec3(0.0, 0.0, 0.5), 0.0, vec3(0.0, 1.0, 0.0)};
+	//Object sph3 = { 0, vec3(0.0, 0.0, 0.0), vec3(150.0/255.0, 220.0/255.0, 240.0/255.0), 498.0, vec3(0)};
+	//scene[2] = sph3;
+	Object pl = { 1, vec3(0.0, -2.0, 0.0), vec3(0.9, 0.9, 0.9), 0.0, vec3(0.0, 1.0, 0.0)};
 	scene[2] = pl;
 
 	Ray ray;
@@ -172,21 +179,73 @@ void main()
 	ray.pos = cameraPosition;
 
 	// trace to a defined depth here
+	int passes = 4;
 	int depth = 2;
+	int samples = 1;
+	//for (int p = 0; p < passes; p++)
+	//{
 	for (int d = 0; d < depth; d++)
-	{
+	{	
 		Hit hit;
+
+		// Comment this all out and figure out something better.
+		// Or, just no anti-aliasing.
+		// try center first so we can break if nothing is there
+		ray.pos.x += pixelSize.x / 2;
+		ray.pos.y += pixelSize.y / 2;
+		// yeah, i know, but what if this works?
 		
-		vec3 newCol = trace(ray, hit);
+		/*
+		ray.pos.x -= pixelSize.x / 2;
+		ray.pos.y -= pixelSize.y / 2;
+		ray.pos.x += pixelSize.x;
+		col += vec4(trace(ray, hit), 1.0);
+		ray.pos.x -= pixelSize.x;
+		ray.pos.y += pixelSize.y;
+		col += vec4(trace(ray, hit), 1.0);
+		ray.pos.x += pixelSize.x;
+		col += vec4(trace(ray, hit), 1.0);
+		*/
+		/*
+		int divby = 1;
+		for (int s = 0; s < samples; s++)
+		{
+			
+			if (d == 1)
+			{
+				col += trace(ray, hit)/2;
+			}
+			else
+			{
+				col += trace(ray, hit)/2;
+			}
+		
+			if (!hit.flag) break;
+			divby++;
+		}
+		*/
+		
+
+		
+
+		col += trace(ray, hit);
 
 		if (!hit.flag) break;
+		
+		col /= 3;
 
-		col += vec4(newCol, 0.0);
+		//col += vec4(newCol, 0.0);
 
 		// next ray
+		/*
 		vec2 co = vec2(time*x, time*y);
 		vec2 co1 = vec2(time*y*2, time*x*2);
 		vec2 co2 = vec2(time*ray.dir.y*3, time*ray.dir.x*3);
+		*/
+
+		vec2 co = vec2(x, y);
+		vec2 co1 = vec2(y*2, x*2);
+		vec2 co2 = vec2(ray.dir.y*3, ray.dir.x*3);
 
 		ray.dir = normalize(vec3(rand(co), rand(co1), rand(co2)));
 		if (dot(hit.normal, ray.dir) < 0.0) ray.dir = -ray.dir;
@@ -195,9 +254,13 @@ void main()
 		
 
 	}
+	//}
+
+	//col /= passes;
 	
 	//col /= 2.0;
 
+	//col = sqrt(col);
 	
-	imageStore(screen, pixelCoord, col);
+	imageStore(screen, pixelCoord, vec4(col, 1.0));
 }
