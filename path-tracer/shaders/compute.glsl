@@ -10,7 +10,7 @@ vec3 directionalLight = vec3(1.0, -1.0, -1.0);
 
 uniform mat4 viewMatrix;
 
-//uniform int time;
+uniform int time;
 
 struct Ray
 {
@@ -179,88 +179,33 @@ void main()
 	ray.pos = cameraPosition;
 
 	// trace to a defined depth here
-	int passes = 4;
 	int depth = 2;
-	int samples = 1;
-	//for (int p = 0; p < passes; p++)
-	//{
+	int samples = 4;
 	for (int d = 0; d < depth; d++)
 	{	
 		Hit hit;
 
-		// Comment this all out and figure out something better.
-		// Or, just no anti-aliasing.
-		// try center first so we can break if nothing is there
 		ray.pos.x += pixelSize.x / 2;
-		ray.pos.y += pixelSize.y / 2;
-		// yeah, i know, but what if this works?
-		
-		/*
-		ray.pos.x -= pixelSize.x / 2;
-		ray.pos.y -= pixelSize.y / 2;
-		ray.pos.x += pixelSize.x;
-		col += vec4(trace(ray, hit), 1.0);
-		ray.pos.x -= pixelSize.x;
-		ray.pos.y += pixelSize.y;
-		col += vec4(trace(ray, hit), 1.0);
-		ray.pos.x += pixelSize.x;
-		col += vec4(trace(ray, hit), 1.0);
-		*/
-		/*
-		int divby = 1;
-		for (int s = 0; s < samples; s++)
-		{
-			
-			if (d == 1)
-			{
-				col += trace(ray, hit)/2;
-			}
-			else
-			{
-				col += trace(ray, hit)/2;
-			}
-		
-			if (!hit.flag) break;
-			divby++;
-		}
-		*/
-		
+		ray.pos.y += pixelSize.y / 2;		
 
-		
-
-		col += trace(ray, hit);
+		col += trace(ray, hit) / (d+1);
 
 		if (!hit.flag) break;
 		
-		col /= 3;
+		col /= 4;
 
-		//col += vec4(newCol, 0.0);
-
-		// next ray
-		/*
-		vec2 co = vec2(time*x, time*y);
-		vec2 co1 = vec2(time*y*2, time*x*2);
-		vec2 co2 = vec2(time*ray.dir.y*3, time*ray.dir.x*3);
-		*/
-
-		vec2 co = vec2(x, y);
-		vec2 co1 = vec2(y*2, x*2);
-		vec2 co2 = vec2(ray.dir.y*3, ray.dir.x*3);
+		vec2 co = vec2(x*time, y*time);
+		vec2 co1 = vec2(y*2*time, x*2*time);
+		vec2 co2 = vec2(ray.dir.y*3*time, ray.dir.x*3*time);
 
 		ray.dir = normalize(vec3(rand(co), rand(co1), rand(co2)));
 		if (dot(hit.normal, ray.dir) < 0.0) ray.dir = -ray.dir;
 
 		ray.pos = hit.pos + 0.01*ray.dir;
-		
-
 	}
-	//}
 
-	//col /= passes;
-	
-	//col /= 2.0;
-
-	//col = sqrt(col);
+	col = sqrt(col);
 	
 	imageStore(screen, pixelCoord, vec4(col, 1.0));
+	//imageAtomicAdd(screen, pixelCoord, vec4(col, 1.0));
 }

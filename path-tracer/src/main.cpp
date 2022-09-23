@@ -177,14 +177,19 @@ int main()
     // Well, for orbiting camera our position will change
 
     // time innit
-    /*unsigned int timeLocation = computeShader.getUniformLocation("time");
-    long long then = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();*/
+    unsigned int timeLocation = computeShader.getUniformLocation("time");
+    long long then = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 
     // i love c++ sometimes
     //long deez = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     //std::cout << deez << std::endl;
+    
+    // Don't forget about progressive rendering!
+    // ie storing the accumlated textures in a buffer and
+    // interpolating between them to converge the image!
 
     /* Loop until the user closes the window */
+    int i = 0;
     while (!glfwWindowShouldClose(window))
     {
         double frameStartTime = glfwGetTime();
@@ -196,18 +201,18 @@ int main()
         if (camPosLocation >= 0) glUniform3fv(camPosLocation, 1, glm::value_ptr(camera.getPos()));
         if (viewMatLocation >= 0) glUniformMatrix4fv(viewMatLocation, 1, GL_FALSE, glm::value_ptr(camera.viewMatrix));
         
-        /*long long now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+        long long now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
         glUniform1i(timeLocation, (int)(now - then));
-        then = now;*/
+        then = now;
         
         glDispatchCompute((unsigned int)WINDOW_WIDTH, (unsigned int)WINDOW_HEIGHT, 1);
         // Barrier (stop execution) to ensure data writing is finished before access.
         glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
         // Bind vertex and fragment shaders after compute shader.
-        shader.bind();
+        shader.bind();       
 
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT);  
 
         glBindTexture(GL_TEXTURE_2D, texture);
 
@@ -217,11 +222,12 @@ int main()
         glfwSwapBuffers(window);
 
         /* Poll for and process events */
-        glfwPollEvents();
+        glfwPollEvents(); 
 
         double frameEndTime = glfwGetTime();
         double fps = 1 / (frameEndTime - frameStartTime);
         glfwSetWindowTitle(window, std::to_string(fps).c_str());
+        i++;
     }
 
     glfwTerminate();
