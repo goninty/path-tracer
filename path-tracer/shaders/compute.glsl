@@ -1,6 +1,6 @@
 #version 460 core
 
-layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 1) in;
 
 layout(rgba32f, binding = 0) uniform image2D screen;
 
@@ -172,8 +172,8 @@ void main()
 	ray.pos = cameraPosition;
 
 	// trace to a defined depth here
-	int depth = 8;
-	for (int d = 1; d < depth; d++)
+	int depth = 2;
+	for (int d = 0; d < depth; d++)
 	{
 		Hit hit;
 		
