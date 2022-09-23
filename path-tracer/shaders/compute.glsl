@@ -5,7 +5,7 @@ layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 layout(rgba32f, binding = 0) uniform image2D screen;
 
 uniform vec3 cameraPosition;// = vec3(0.0, 0.0, 0.0);
-uniform vec3 directionalLight = vec3(1.0, -1.0, -1.0);
+uniform vec3 directionalLight = vec3(1.0, -1.0, 0.0);
 //uniform vec3 directionalLight = vec3(0, 0.0, -1.0);
 
 uniform mat4 viewMatrix;
@@ -104,11 +104,34 @@ vec3 trace(const in Ray ray)
 	{
 		hit.flag = false;
 		intersect(ray, hit, scene[i]);
+
 		if (hit.flag && hit.t < t)
 		{
 			t = hit.t;
 			closestHit = hit;
 		}
+
+		if (hit.flag)
+		{
+			// shadow test
+			// craft shadow ray going towards light source from hit point
+			Ray shRay;
+			shRay.dir = -directionalLight;
+			shRay.pos = hit.pos + 0.01f*shRay.dir;
+			Hit shHit;
+			for (int j = 0; j < scene.length; j++)
+			{
+				shHit.flag = false;
+				intersect(shRay, shHit, scene[j]);
+				if (shHit.flag)
+				{
+					// point is in shadow
+					closestHit.color = vec3(0, 0, 0);
+				}
+			}
+			
+		}
+
 	}
 
 	float ndotl = clamp(dot(closestHit.normal, normalize(-directionalLight)), 0.05, 1.0);
@@ -138,11 +161,11 @@ void main()
 
 	// populate scene
 	Object sph = { 0, vec3(0.0, 0.0, -5.0), vec3(0.0, 1.0, 0.0), 2.0, vec3(0)};
-	scene[0] = sph;
+	scene[1] = sph;
 	Object sph2 = { 0, vec3(0.0, 0.0, 5.0), vec3(1.0, 0.0, 0.0), 2.0, vec3(0)};
-	scene[1] = sph2;
+	scene[2] = sph2;
 	Object pl = { 1, vec3(0.0, -2.0, 0.0), vec3(0.5, 0.5, 0.5), 0.0, vec3(0.0, 1.0, 0.0)};
-	scene[2] = pl;
+	scene[0] = pl;
 	
 	
 	col = vec4(trace(viewRay), 1.0);

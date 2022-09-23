@@ -4,7 +4,6 @@
 
 Camera::Camera()
 {
-	std::cout << glm::to_string(right) << std::endl;
 }
 
 Camera::~Camera()
