@@ -11,6 +11,7 @@
 #include <glm.hpp>
 #include <gtc/type_ptr.hpp>
 #include <gtx/string_cast.hpp>
+#include <gtx/quaternion.hpp>
 
 #include "Shader.h"
 #include "ComputeShader.h"
@@ -19,12 +20,15 @@
 #define WINDOW_WIDTH 512
 #define WINDOW_HEIGHT 512
 
+// Store these so we can calculate angles of mouse movement on each new frame.
+float lastMouseX = WINDOW_WIDTH / 2;
+float lastMouseY = WINDOW_HEIGHT / 2;
+
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     if (action == GLFW_RELEASE) return;
 
     Camera* cam = (Camera*)glfwGetWindowUserPointer(window);
-    
     switch (key)
     {
         case GLFW_KEY_W:
@@ -46,40 +50,15 @@ void cursorCallback(GLFWwindow* window, double xpos, double ypos)
 {
     Camera* cam = (Camera*)glfwGetWindowUserPointer(window);
 
-    // top left: (0,0)
-    // bottom right: (width-1, height-1)
-    //std::cout << xpos << ", " << ypos << std::endl;
-    // read current look?
+    float xOffset = xpos - lastMouseX;
+    float yOffset = ypos - lastMouseY;
+    lastMouseX = xpos;
+    lastMouseY = ypos;
 
-    //std::cout << xpos << std::endl;
-    float mouseX = (int)xpos % WINDOW_WIDTH;
-    //std::cout << xpos << ", "<< mouseX << std::endl;
-    //std::cout << ((float)mouseX - WINDOW_WIDTH / 2) / (WINDOW_WIDTH / 2) << std::endl;
+    const float sens = 0.2f;
 
-    float sens = 2.0f;
-
-    std::cout << glm::to_string(cam->getLook()) << std::endl;
-
-    glm::vec3 newLook;
-    // is this shoddy? i don't know. it works!
-    newLook.x = (mouseX-WINDOW_WIDTH/2) / (WINDOW_WIDTH/2);// / WINDOW_WIDTH;
-    newLook.y = -(ypos - (WINDOW_HEIGHT/2)) / (WINDOW_HEIGHT/2);
-    newLook.z = -1.0f - newLook.x;
-
-    //if (newLook.x == -1.0f)
-    //{
-    //    newLook.z = -newLook.z;
-    //    //newLook.x = (1.0f - mouseX - WINDOW_WIDTH / 2) / (WINDOW_WIDTH / 2);
-    //}
-
-    /*if (newLook.x >= 1.0f)
-    {
-        newLook.z = -newLook.z;
-    }*/
-
-    //std::cout << newLook.x << std::endl;
-
-    cam->setLook(newLook/**sens*/);
+    // negative y offset otherwise inverted y axis movement
+    cam->rotate(xOffset*sens, -yOffset*sens);  
 }
 
 int main()
@@ -173,6 +152,7 @@ int main()
 
     /* Positionable camera init */
     Camera camera = Camera();
+
     // Need to feed camera position and look(?) to compute shader.
     unsigned int camPosLocation = computeShader.getUniformLocation("cameraPosition");
     unsigned int viewMatLocation = computeShader.getUniformLocation("viewMatrix");
@@ -183,6 +163,12 @@ int main()
     glfwSetKeyCallback(window, keyCallback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetCursorPosCallback(window, cursorCallback);
+
+    // Some notes:
+    // Rotation requires recalculating the view matrix, while maintaining the same look point.
+    // (At least, it seems for orbiting cameras and not FPS-style ones).
+    // But what changes when we rotate for the view matrix to have to be re-calculated?
+    // Well, for orbiting camera our position will change
     
 
     /* Loop until the user closes the window */

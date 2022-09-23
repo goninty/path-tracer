@@ -4,6 +4,7 @@
 
 Camera::Camera()
 {
+	std::cout << glm::to_string(right) << std::endl;
 }
 
 Camera::~Camera()
@@ -22,21 +23,39 @@ void Camera::setLook(glm::vec3 newLook)
 
 void Camera::moveForward()
 {
-	pos += look * speed;
+	pos += look * movementSpeed;
 }
 
 void Camera::moveBackward()
 {
-	pos -= look * speed;
+	pos -= look * movementSpeed;
 }
 
 void Camera::moveLeft()
 {
-	pos -= right * speed;
+	pos -= right * movementSpeed;
 }
 
 void Camera::moveRight()
 {
-	pos += right * speed;
+	pos += right * movementSpeed;
 	//viewMatrix = glm::lookAt(pos, look, up);
+}
+
+void Camera::rotate(float yawDelta, float pitchDelta)
+{
+	yaw += yawDelta;
+	pitch += pitchDelta;
+
+	// https://learnopengl.com/Getting-started/Camera
+	look.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+	look.y = sin(glm::radians(pitch));
+	look.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+	glm::normalize(look);
+
+	// we also need to recalculate the right vector
+	right = glm::cross(look, up);
+	glm::normalize(right);
+
+	viewMatrix = glm::lookAt(pos, look + pos, up);
 }

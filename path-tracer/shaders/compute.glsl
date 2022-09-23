@@ -130,15 +130,18 @@ void main()
 	float y = (float(pixelCoord.y * 2 - size.y) / size.y);
 
 	Ray viewRay;
-	// add camera position to move near plane when camera moves
-	// x, y, -1.0 is in "camera coordinates" or some relative position to the camera
-	// need to transform that then to the world space coordinates
-	// how?
-	vec4 temp = vec4(x, y, -1.0, 1.0)*viewMatrix;
-	viewRay.pos = vec3(temp.x, temp.y, temp.z) + cameraPosition;
-	// don't forget to normalize your view direction vector!
-	viewRay.dir = normalize(viewRay.pos - cameraPosition);
 
+	vec4 temp = (vec4(x, y, -1.0, 1.0)*viewMatrix) + vec4(cameraPosition, 0.0);
+	viewRay.pos = vec3(temp.x, temp.y, temp.z);// + cameraPosition;
+	viewRay.dir = normalize(viewRay.pos - cameraPosition);
+	viewRay.pos = cameraPosition;
+
+	/*
+	viewRay.pos = cameraPosition;
+	viewRay.dir = (vec3(x, y, -1.0));// + cameraPosition) - cameraPosition;
+	// don't forget to normalize your view ray direction vector!
+	viewRay.dir = normalize(viewRay.dir);
+	*/
 	// populate scene
 	Object sph = { 0, vec3(0.0, 0.0, -5.0), vec3(0.0, 1.0, 0.0), 2.0, vec3(0)};
 	scene[0] = sph;
