@@ -18,9 +18,9 @@ OpenGL is used to render a quad and an empty texture is bound which the compute 
 ## TODO
 - ~~Ray trace.~~
 - Phong lighting (~~diffuse~~, specular).
-- Shadows.
-- Point lights.
+- ~~Shadows.~~
 - Soft shadows.
+- Point lights.
 - Reflection / refraction.
 - ~~Moveable camera.~~
 - Read in mesh files (.obj).
