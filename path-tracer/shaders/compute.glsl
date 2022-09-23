@@ -93,10 +93,28 @@ void intersect(const in Ray ray, inout Hit hit, inout Object obj)
 	}
 }
 
-vec3 trace(const in Ray ray)
+// is this point in shadow?
+bool inShadow(vec3 pos)
+{
+	Ray shRay;
+	shRay.dir = -directionalLight;
+	shRay.pos = pos + 0.001*shRay.dir;
+
+	Hit shHit;
+
+	for (int i = 0; i < scene.length; i++)
+	{
+		shHit.flag = false;
+		intersect(shRay, shHit, scene[i]);
+		if (shHit.flag) return true;
+	}
+
+	return false;
+}
+
+vec3 trace(const in Ray ray, inout Hit hit)
 {	
 	float t = 99999; // closest
-	Hit hit;
 	Hit closestHit;
 	closestHit.color = vec3(0, 0, 0);
 
@@ -109,29 +127,8 @@ vec3 trace(const in Ray ray)
 		{
 			t = hit.t;
 			closestHit = hit;
+			if (inShadow(hit.pos)) return hit.color*0.1;
 		}
-
-		if (hit.flag)
-		{
-			// shadow test
-			// craft shadow ray going towards light source from hit point
-			Ray shRay;
-			shRay.dir = -directionalLight;
-			shRay.pos = hit.pos + 0.01f*shRay.dir;
-			Hit shHit;
-			for (int j = 0; j < scene.length; j++)
-			{
-				shHit.flag = false;
-				intersect(shRay, shHit, scene[j]);
-				if (shHit.flag)
-				{
-					// point is in shadow
-					closestHit.color = vec3(0, 0, 0);
-				}
-			}
-			
-		}
-
 	}
 
 	float ndotl = clamp(dot(closestHit.normal, normalize(-directionalLight)), 0.05, 1.0);
@@ -152,22 +149,22 @@ void main()
 	float x = (float(pixelCoord.x * 2 - size.x) / size.x);
 	float y = (float(pixelCoord.y * 2 - size.y) / size.y);
 
-	Ray viewRay;
+	// populate scene
+	Object sph = { 0, vec3(0.0, 0.0, -5.0), vec3(0.0, 1.0, 0.0), 2.0, vec3(0)};
+	scene[0] = sph;
+	Object sph2 = { 0, vec3(0.0, 0.0, 5.0), vec3(1.0, 0.0, 0.0), 2.0, vec3(0)};
+	scene[1] = sph2;
+	Object pl = { 1, vec3(0.0, -2.0, 0.0), vec3(0.5, 0.5, 0.5), 0.0, vec3(0.0, 1.0, 0.0)};
+	scene[2] = pl;
 
+	Ray viewRay;
 	vec4 temp = (vec4(x, y, -1.0, 1.0)*viewMatrix) + vec4(cameraPosition, 0.0);
 	viewRay.pos = vec3(temp.x, temp.y, temp.z);// + cameraPosition;
 	viewRay.dir = normalize(viewRay.pos - cameraPosition);
 	viewRay.pos = cameraPosition;
 
-	// populate scene
-	Object sph = { 0, vec3(0.0, 0.0, -5.0), vec3(0.0, 1.0, 0.0), 2.0, vec3(0)};
-	scene[1] = sph;
-	Object sph2 = { 0, vec3(0.0, 0.0, 5.0), vec3(1.0, 0.0, 0.0), 2.0, vec3(0)};
-	scene[2] = sph2;
-	Object pl = { 1, vec3(0.0, -2.0, 0.0), vec3(0.5, 0.5, 0.5), 0.0, vec3(0.0, 1.0, 0.0)};
-	scene[0] = pl;
-	
-	
-	col = vec4(trace(viewRay), 1.0);
+	Hit viewHit;
+	col = vec4(trace(viewRay, viewHit), 1.0);
+
 	imageStore(screen, pixelCoord, col);
 }
