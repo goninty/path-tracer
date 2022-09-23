@@ -3,6 +3,7 @@
 #include <string>
 #include <sstream>
 #include <random>
+#include <chrono>
 
 #include <GL/glew.h>
 /* Note that GLEW_STATIC is defined in the compiler preprocessor directives */
@@ -17,8 +18,10 @@
 #include "ComputeShader.h"
 #include "Camera.h";
 
-#define WINDOW_WIDTH 512
-#define WINDOW_HEIGHT 512
+#define WINDOW_WIDTH 800
+#define WINDOW_HEIGHT 800
+
+#define CAN_USE_MOUSE true
 
 // Store these so we can calculate angles of mouse movement on each new frame.
 float lastMouseX = WINDOW_WIDTH / 2;
@@ -161,14 +164,25 @@ int main()
     glfwSetWindowUserPointer(window, &camera);
     /* Set callbacks for GLFW keyboard and mouse input */
     glfwSetKeyCallback(window, keyCallback);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    glfwSetCursorPosCallback(window, cursorCallback);
+    if (CAN_USE_MOUSE)
+    {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwSetCursorPosCallback(window, cursorCallback);
+    }
 
     // Some notes:
     // Rotation requires recalculating the view matrix, while maintaining the same look point.
     // (At least, it seems for orbiting cameras and not FPS-style ones).
     // But what changes when we rotate for the view matrix to have to be re-calculated?
     // Well, for orbiting camera our position will change
+
+    // time innit
+    unsigned int timeLocation = computeShader.getUniformLocation("time");
+    long long then = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+
+    // i love c++ sometimes
+    //long deez = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    //std::cout << deez << std::endl;
     
 
     /* Loop until the user closes the window */
@@ -179,6 +193,9 @@ int main()
         // Upload (write) to uniform variable.
         if (camPosLocation >= 0) glUniform3fv(camPosLocation, 1, glm::value_ptr(camera.getPos()));
         if (viewMatLocation >= 0) glUniformMatrix4fv(viewMatLocation, 1, GL_FALSE, glm::value_ptr(camera.viewMatrix));
+        long long now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+        glUniform1i(timeLocation, (int)(now - then));
+        then = now;
         glDispatchCompute((unsigned int)WINDOW_WIDTH, (unsigned int)WINDOW_HEIGHT, 1);
         // Barrier (stop execution) to ensure data writing is finished before access.
         glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);

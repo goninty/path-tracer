@@ -5,10 +5,12 @@ layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 layout(rgba32f, binding = 0) uniform image2D screen;
 
 uniform vec3 cameraPosition;// = vec3(0.0, 0.0, 0.0);
-uniform vec3 directionalLight = vec3(1.0, -1.0, 0.0);
+vec3 directionalLight = vec3(0.0, -1.0, 0.0);
 //uniform vec3 directionalLight = vec3(0, 0.0, -1.0);
 
 uniform mat4 viewMatrix;
+
+uniform int time;
 
 struct Ray
 {
@@ -44,6 +46,12 @@ struct Sphere
 
 Object scene[3];
 
+// PRNG https://stackoverflow.com/a/4275343/18375905
+float rand(vec2 co)
+{
+	return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
 // out keyword gives pass by reference (without initialization) (kind of?)
 // intersection test
 void intersect(const in Ray ray, inout Hit hit, inout Object obj)
@@ -76,8 +84,6 @@ void intersect(const in Ray ray, inout Hit hit, inout Object obj)
 	}
 	else if (obj.type == 1)
 	{
-		// get ray and plane parallel?
-		// then check if dot product of ray and normal == 0 (or maybe >0)
 		float denom = dot(obj.normal, ray.dir);
 
 		float t = dot(obj.center - ray.pos, obj.normal) / denom;
@@ -116,6 +122,7 @@ vec3 trace(const in Ray ray, inout Hit hit)
 {	
 	float t = 99999; // closest
 	Hit closestHit;
+	closestHit.flag = false;
 	closestHit.color = vec3(0, 0, 0);
 
 	for (int i = 0; i < scene.length; i++)
@@ -127,10 +134,11 @@ vec3 trace(const in Ray ray, inout Hit hit)
 		{
 			t = hit.t;
 			closestHit = hit;
-			if (inShadow(hit.pos)) return hit.color*0.1;
+			//if (inShadow(hit.pos)) return hit.color*0.1;
 		}
 	}
 
+	hit = closestHit;
 	float ndotl = clamp(dot(closestHit.normal, normalize(-directionalLight)), 0.05, 1.0);
 	return closestHit.color * ndotl;
 }
@@ -150,21 +158,46 @@ void main()
 	float y = (float(pixelCoord.y * 2 - size.y) / size.y);
 
 	// populate scene
-	Object sph = { 0, vec3(0.0, 0.0, -5.0), vec3(0.0, 1.0, 0.0), 2.0, vec3(0)};
+	Object sph = { 0, vec3(-2.5, 0.0, -7.0), vec3(0.0, 1.0, 0.0), 2.0, vec3(0)};
 	scene[0] = sph;
-	Object sph2 = { 0, vec3(0.0, 0.0, 5.0), vec3(1.0, 0.0, 0.0), 2.0, vec3(0)};
+	Object sph2 = { 0, vec3(2.5, 0.0, -7.0), vec3(1.0, 0.0, 0.0), 2.0, vec3(0)};
 	scene[1] = sph2;
-	Object pl = { 1, vec3(0.0, -2.0, 0.0), vec3(0.5, 0.5, 0.5), 0.0, vec3(0.0, 1.0, 0.0)};
+	Object pl = { 1, vec3(0.0, -2.0, 0.0), vec3(0.0, 0.0, 0.5), 0.0, vec3(0.0, 1.0, 0.0)};
 	scene[2] = pl;
 
-	Ray viewRay;
+	Ray ray;
 	vec4 temp = (vec4(x, y, -1.0, 1.0)*viewMatrix) + vec4(cameraPosition, 0.0);
-	viewRay.pos = vec3(temp.x, temp.y, temp.z);// + cameraPosition;
-	viewRay.dir = normalize(viewRay.pos - cameraPosition);
-	viewRay.pos = cameraPosition;
+	ray.pos = vec3(temp.x, temp.y, temp.z);// + cameraPosition;
+	ray.dir = normalize(ray.pos - cameraPosition);
+	ray.pos = cameraPosition;
 
-	Hit viewHit;
-	col = vec4(trace(viewRay, viewHit), 1.0);
+	// trace to a defined depth here
+	int depth = 8;
+	for (int d = 1; d < depth; d++)
+	{
+		Hit hit;
+		
+		vec3 newCol = trace(ray, hit);
 
+		if (!hit.flag) break;
+
+		col += vec4(newCol, 0.0);
+
+		// next ray
+		vec2 co = vec2(time*x, time*y);
+		vec2 co1 = vec2(time*y*2, time*x*2);
+		vec2 co2 = vec2(time*ray.dir.y*3, time*ray.dir.x*3);
+
+		ray.dir = normalize(vec3(rand(co), rand(co1), rand(co2)));
+		if (dot(hit.normal, ray.dir) < 0.0) ray.dir = -ray.dir;
+
+		ray.pos = hit.pos + 0.01*ray.dir;
+		
+
+	}
+	
+	//col /= 2.0;
+
+	
 	imageStore(screen, pixelCoord, col);
 }
