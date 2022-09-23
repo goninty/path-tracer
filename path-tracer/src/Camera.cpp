@@ -47,6 +47,9 @@ void Camera::rotate(float yawDelta, float pitchDelta)
 	yaw += yawDelta;
 	pitch += pitchDelta;
 
+	if (pitch > 89.9f) pitch = 89.9f;
+	if (pitch < -89.9f) pitch = -89.9f;
+
 	// https://learnopengl.com/Getting-started/Camera
 	look.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
 	look.y = sin(glm::radians(pitch));
